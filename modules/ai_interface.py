@@ -22,6 +22,7 @@ class AIInterface:
 
     def receive_response(self):
         # Retrieves the generated response from the OpenAI API
+        self.prompts.add_AI_response(self.response.choices[0].message["content"])
         return self.response.choices[0].message["content"]
     
     def set_model(self, model):

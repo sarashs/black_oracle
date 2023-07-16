@@ -2,10 +2,12 @@ import tiktoken
 
 # Maximum number of available tokens
 MAX_TOKEN = 16000
-MAX_MESSAGE_TOKEN = MAX_TOKEN / 2
+MAX_MESSAGE_TOKEN = 8000
 
 class Prompts:
     def __init__(self, model):
+        self.module_name_prompt = {"role": "user", "content": "Create a JSON dictionary that represents the modules for a hardware design project. Each module should be represented as a key-value pair in the dictionary. The key should be the module name followed by its extension (.v). The value should be another dictionary. This inner dictionary should have two keys: \"connected_to\" and \"description\". The value for \"connected_to\" should be a list of names of modules that are connected to the current module. The value for \"description\" should be a brief sentence explaining the module's function. Do not add any additional text, just output the final JSON dictionary."}
+        self.user_prompt_not_ok = {"role": "user", "content": "ask a set of at most 20 questions that will enable you to complete the design"}
         self.pre_prompts = [{"role" : "system", "content": "You are a seasoned AI FPGA engineer. Your goal is to write working logic code in VHDL, Verilog and System verilog as well as test benches on your own."},
                             {"role" : "user", "content": "As a hardware engineer, you are given the following Instructions to design a hardware. There are two ways you are allowed to respond to this prompt.\
                     If everything is clear and you know exactly how to write the HDL code, then respond by: <<<Desing OK>>>.\
@@ -13,7 +15,7 @@ class Prompts:
                     Remember, you are only allowed to respond in these two ways. Do not inlcude anything other than the what is instructed in your response. \
                     Instructions: \n\n Design a simple cpu in verilog"},
                             {"role" : "assistant", "content": "<<<Design NOT OK>>>"},
-                            {"role" : "user", "content": "ask a set of at most 20 questions that will enable you complete the design"},
+                            self.user_prompt_not_ok,
                             {"role" : "assistant", "content": "1. What type of CPU architecture is required: Von Neumann or Harvard, or another type?\n \
                              2. How many bits should the CPU be? \n \
                              3. What is the required instruction set for this CPU? Is it MIPS, ARM, x86 or a custom one? \n \
@@ -72,7 +74,7 @@ class Prompts:
                                 The selection of the AXI-lite interface for I/O operations is based on its widespread use and compatibility with the Zynq 7000 device. This ensures smooth integration with the PS.\
                                 Design decisions for instruction fetching and bus architecture will be driven by an aim for simplicity and efficiency. Likely, a synchronous bus architecture will be used, given its relative simplicity and predictability compared to an asynchronous one. For instruction fetching, a simple fetch-decode-execute cycle will be implemented.\
                                 Each module will be tested individually with custom test benches to ensure their correctness and reliability. Despite not having a specific protocol, this method is widely accepted and effective in hardware verification."},
-                            {"role" : "user", "content": "Create a JSON dictionary that represents the modules for a hardware design project. Each module should be represented as a key-value pair in the dictionary. The key should be the module name followed by its extension (.v). The value should be another dictionary. This inner dictionary should have two keys: \"connected_to\" and \"description\". The value for \"connected_to\" should be a list of names of modules that are connected to the current module. The value for \"description\" should be a brief sentence explaining the module's function. Do not add any additional text, just output the final JSON dictionary."},
+                            self.module_name_prompt,
                             {"role" : "assistant", "content": "\n\
                              {\n\
                                 \"register_file.v\": {\n \
@@ -100,20 +102,22 @@ class Prompts:
                                     \"description\": \"Manages I/O operations between the CPU and the PS on the Zynq 7000 device.\"\n \
                                 }"
                             }                       ]
-
         self.model = model
         try:
             self.tokenizer = tiktoken.encoding_for_model(model)
         except KeyError:
+            print("Warning: model not found. Using cl100k_base encoding.")
             self.tokenizer = tiktoken.get_encoding("cl100k_base")
         self.prompt_history = []
         self.num_tokens = sum([self.count_tokens(item["content"]) for item in self.pre_prompts])
         self.message = self.pre_prompts
 
-    def generate_initial_prompt(self, message: str):
+    def generate_initial_prompt(self, message: str) -> str:
         """This prompt is the first description of the system we want to build."""
         added_tokens = self.count_tokens(message)
-        if (self.num_tokens + added_tokens) < MAX_MESSAGE_TOKEN:
+        self.num_tokens += added_tokens
+        print(f'Total number of tokens at intial prompt: {self.num_tokens}')
+        if (self.num_tokens) < MAX_MESSAGE_TOKEN:
             text = f"As a hardware engineer, you are given the following Instructions to design a hardware. There are two ways you are allowed to respond to this prompt.\
                     If everything is clear and you know exactly how to write the HDL code, then respond by: <<<Desing OK>>>.\
                     If you need more information before you can write the HDL code, then respond by: <<<Design NOT OK>>>. \
@@ -125,9 +129,20 @@ class Prompts:
             print("The initial instruction is too large")
             return "failed"
 
+    def generate_module_names(self, language):
+        """Thie prompt generates a set of module names and descriptions"""
+        self.module_name_prompt['content'].replace(".v", language[1])
+        added_tokens = self.count_tokens(self.module_name_prompt['content'])
+        self.num_tokens += added_tokens
+        print(f'Total number of tokens at generating module names: {self.num_tokens}')
+        self.message.append(self.module_name_prompt)
+
     def generate_followup(self):
         """This prompt responds to the followup questions"""
-        pass
+        added_tokens = self.count_tokens(self.user_prompt_not_ok['content'])
+        self.num_tokens += added_tokens
+        print(f'Total number of tokens at getting the followup questions: {self.num_tokens}')
+        self.message.append(self.user_prompt_not_ok)
 
     def generate_module(self):
         """Prompt that tells GPT to generate modules"""
@@ -142,7 +157,16 @@ class Prompts:
 
         # we add an extra 4 tokens for role system/user/assisstance content and \n
         try:
-            num_tokens = len(self.tokenizer(message)) + 4
+            num_tokens = len(self.tokenizer.encode(message)) + 4
         except TypeError:
             num_tokens = 4
         return num_tokens
+    
+    def add_AI_response(self, text):
+        """Add AIs response to the trail of messages"""
+        self.num_tokens += self.count_tokens(text)
+        self.message.append({"role": "user", "content": text})
+
+if __name__ == "__main__":
+    p = Prompts('gpt-4')
+    p.generate_initial_prompt('')

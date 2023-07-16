@@ -5,17 +5,23 @@ class DesignGenerator:
     def __init__(self, ai_interface, u_interface):
         self.ai_interface = ai_interface
         self.u_interface = u_interface
+        self.language = None
 
     def get_design_features(self):
-        prompt = self.u_interface.get_initial_prompt()
-        self.ai_interface.prompts.generate_initial_prompt(prompt)
+        prompt, self.language = self.u_interface.get_initial_prompt()
+        _ = self.ai_interface.prompts.generate_initial_prompt(prompt)
         self.ai_interface.send_prompt()
         response = self.ai_interface.receive_response()
         # Assess the response
         if "design ok" in response.lower():
-            self.ai_interface.prompts
+            self.ai_interface.prompts.generate_module_names(self.language)
         else:
-            pass
+            self.ai_interface.prompts.generate_followup()
+            self.ai_interface.send_prompt()
+            response = self.ai_interface.receive_response()
+            #self.ai_interface.prompts.generate_module_names(self.language)
+        self.ai_interface.send_prompt()
+        response = self.ai_interface.receive_response()
         return response
 
     def generate_architecture(self) -> list:
@@ -42,3 +48,4 @@ if __name__ == "__main__":
     dg = DesignGenerator(ai, ui)
     response = dg.get_design_features()
     print(response)
+    #print(dg.ai_interface.prompts.message)
