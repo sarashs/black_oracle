@@ -8,6 +8,7 @@ class Prompts:
     def __init__(self, model):
         self.module_name_prompt = {"role": "user", "content": "Create a JSON dictionary that represents the modules for a hardware design project. Each module should be represented as a key-value pair in the dictionary. The key should be the module name followed by its extension (.v). The value should be another dictionary. This inner dictionary should have two keys: \"connected_to\" and \"description\". The value for \"connected_to\" should be a list of names of modules that are connected to the current module. The value for \"description\" should be a brief sentence explaining the module's function. Do not add any additional text, just output the final JSON dictionary."}
         self.user_prompt_not_ok = {"role": "user", "content": "ask a set of at most 20 questions that will enable you to complete the design"}
+        self.user_response_to_questions = {"role": "user", "content": ''}
         self.pre_prompts = [{"role" : "system", "content": "You are a seasoned AI FPGA engineer. Your goal is to write working logic code in VHDL, Verilog and System verilog as well as test benches on your own."},
                             {"role" : "user", "content": "As a hardware engineer, you are given the following Instructions to design a hardware. There are two ways you are allowed to respond to this prompt.\
                     If everything is clear and you know exactly how to write the HDL code, then respond by: <<<Desing OK>>>.\
@@ -138,11 +139,19 @@ class Prompts:
         self.message.append(self.module_name_prompt)
 
     def generate_followup(self):
-        """This prompt responds to the followup questions"""
+        """This prompt asks the followup questions"""
         added_tokens = self.count_tokens(self.user_prompt_not_ok['content'])
         self.num_tokens += added_tokens
         print(f'Total number of tokens at getting the followup questions: {self.num_tokens}')
         self.message.append(self.user_prompt_not_ok)
+
+    def generate_response_to_followup(self, human_response):
+        """This prompt gives the user response to the followup questions"""
+        self.user_response_to_questions['content'] = human_response
+        added_tokens = self.count_tokens(human_response)
+        self.num_tokens += added_tokens
+        print(f'Total number of tokens at answering the followup questions: {self.num_tokens}')
+        self.message.append(self.user_response_to_questions)
 
     def generate_module(self):
         """Prompt that tells GPT to generate modules"""

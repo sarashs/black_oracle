@@ -16,6 +16,15 @@ class UserInterface:
         else:
             self.get_initial_prompt()
         return prompt, language
+    
+    def get_respone_to_questions(self):
+        """This function obtains the users response to AI's questions via a file"""
+        print("Please input the relative path to your responses to the AI questions. Note that your responses should be an itemized list of replies to the AI questions with no extra text.")
+        response_path = input()
+        #try:
+        with open(response_path, 'r') as file:
+            content = file.read()
+        return content
 
     def show_design(self, design):
         # Shows a design to the user
