@@ -1,5 +1,5 @@
-from ai_interface import AIInterface
-from user_interface import UserInterface
+from modules.ai_interface import AIInterface
+from modules.user_interface import UserInterface
 import json
 import os
 

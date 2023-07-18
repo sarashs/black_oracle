@@ -1,4 +1,4 @@
-from ai_interface import AIInterface
+from modules.ai_interface import AIInterface
 
 class IntegrationDesigner:
     def __init__(self, ai_interface):

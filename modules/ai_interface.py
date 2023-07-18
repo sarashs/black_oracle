@@ -1,6 +1,6 @@
 import openai
 import os
-from prompts import Prompts
+from modules.prompts import Prompts
 
 class AIInterface:
     def __init__(self, model='gpt-4'):
