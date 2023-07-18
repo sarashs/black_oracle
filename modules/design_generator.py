@@ -42,26 +42,11 @@ class DesignGenerator:
             self.ai_interface.prompts.generate_module(module)
             self.ai_interface.send_prompt()
             response = self.ai_interface.receive_response()
-            directory = '/solution/'
+            directory = 'solution'
             full_path = os.path.join(os.getcwd(), directory, module)
             os.makedirs(os.path.join(os.getcwd(), directory), exist_ok=True)
             with open(full_path, 'w') as file:
                 file.write(response)
-
-    def generate_design(self, user_prompt):
-        # Translates the user prompt into an AI prompt
-        ai_prompt = f"Generate a high-level hardware design based on the following user prompt: {user_prompt}"
-
-        # Sends the AI prompt to the AI
-        self.ai_interface.send_prompt(ai_prompt)
-
-        # Receives the AI response
-        ai_response = self.ai_interface.receive_response()
-
-        # Translates the AI response into a user-friendly design
-        design = f"Based on your prompt, here's a proposed high-level hardware design:\n{ai_response}"
-
-        return design
 
 if __name__ == "__main__":
     ai = AIInterface()

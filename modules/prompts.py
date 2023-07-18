@@ -7,7 +7,7 @@ MAX_MODULE_TOKE = 3000
 
 class Prompts:
     def __init__(self, model):
-        self.module_name_prompt = {"role": "user", "content": "Create a JSON dictionary that represents the modules for a hardware design project. Each module should be represented as a key-value pair in the dictionary. The key should be the module name followed by its extension (.v). The value should be another dictionary. This inner dictionary should have two keys: \"connected_to\" and \"description\". The value for \"connected_to\" should be a list of names of modules that are connected to the current module. The value for \"description\" should be a brief sentence explaining the module's function. Do not add any additional text, just output the final JSON dictionary."}
+        self.module_name_prompt = {"role": "user", "content": "Create a JSON dictionary that represents the modules for a synthesizable hardware design project. Each module should be represented as a key-value pair in the dictionary. The key should be the module name followed by its extension (.v). The value should be another dictionary. This inner dictionary should have two keys: \"connected_to\" and \"description\". The value for \"connected_to\" should be a list of names of modules that are connected to the current module. The value for \"description\" should be a brief sentence explaining the module's function. Do not add any additional text, just output the final JSON dictionary."}
         self.user_prompt_not_ok = {"role": "user", "content": "ask a set of at most 20 questions that will enable you to complete the design"}
         self.user_response_to_questions = {"role": "user", "content": ''}
         self.pre_prompts = [{"role" : "system", "content": "You are a seasoned AI FPGA engineer. Your goal is to write working logic code in VHDL, Verilog and System verilog as well as test benches on your own."},
@@ -157,7 +157,7 @@ class Prompts:
 
     def generate_module(self, module):
         """Prompt that tells GPT to generate modules"""
-        generate_module_prompt = f'Generate the {module} module based on your design. Make sure that the inputs and outputs are consistent with the overal design. Write the code in {self.language[0]}. Do not include anything other than the code in your response.'
+        generate_module_prompt = f'Generate the {module} module based on your design. Make sure that your code is synthesizable. Make sure that the inputs and outputs are consistent with the overal design. Write the code in {self.language[0]}. Do not include anything other than the code in your response. Do not include tags, or quotations around the code you write. Only output the code as I will be writing it in a file.'
         added_tokens = self.count_tokens(generate_module_prompt)
         self.num_tokens += added_tokens
         self.message.append({"role": "user", "content": generate_module_prompt})
