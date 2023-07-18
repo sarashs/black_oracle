@@ -1,6 +1,7 @@
 from ai_interface import AIInterface
 from user_interface import UserInterface
 import json
+import os
 
 class DesignGenerator:
     def __init__(self, ai_interface, u_interface):
@@ -37,7 +38,15 @@ class DesignGenerator:
         print(f'Your design will be implemented as follows: \n\n {response}')
 
     def generate_architecture(self) -> list:
-        pass
+        for module in self.module_name_dict.keys():
+            self.ai_interface.prompts.generate_module(module)
+            self.ai_interface.send_prompt()
+            response = self.ai_interface.receive_response()
+            directory = '/solution/'
+            full_path = os.path.join(os.getcwd(), directory, module)
+            os.makedirs(os.path.join(os.getcwd(), directory), exist_ok=True)
+            with open(full_path, 'w') as file:
+                file.write(response)
 
     def generate_design(self, user_prompt):
         # Translates the user prompt into an AI prompt
@@ -59,4 +68,5 @@ if __name__ == "__main__":
     ui = UserInterface()
     dg = DesignGenerator(ai, ui)
     dg.get_design_features()
+    dg.generate_architecture()
     #print(dg.ai_interface.prompts.message)

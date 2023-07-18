@@ -14,7 +14,7 @@ class UserInterface:
         elif ("system verilog" in prompt):
             language = ("system verilog", ".sv")
         else:
-            self.get_initial_prompt()
+            prompt, language = self.get_initial_prompt()
         return prompt, language
     
     def get_respone_to_questions(self):

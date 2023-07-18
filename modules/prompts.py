@@ -3,6 +3,7 @@ import tiktoken
 # Maximum number of available tokens
 MAX_TOKEN = 16000
 MAX_MESSAGE_TOKEN = 8000
+MAX_MODULE_TOKE = 3000
 
 class Prompts:
     def __init__(self, model):
@@ -104,6 +105,7 @@ class Prompts:
                                 }"
                             }                       ]
         self.model = model
+        self.language = ('verilog', '.v')
         try:
             self.tokenizer = tiktoken.encoding_for_model(model)
         except KeyError:
@@ -153,9 +155,17 @@ class Prompts:
         print(f'Total number of tokens at answering the followup questions: {self.num_tokens}')
         self.message.append(self.user_response_to_questions)
 
-    def generate_module(self):
+    def generate_module(self, module):
         """Prompt that tells GPT to generate modules"""
-        pass    
+        generate_module_prompt = f'Generate the {module} module based on your design. Make sure that the inputs and outputs are consistent with the overal design. Write the code in {self.language[0]}. Do not include anything other than the code in your response.'
+        added_tokens = self.count_tokens(generate_module_prompt)
+        self.num_tokens += added_tokens
+        self.message.append({"role": "user", "content": generate_module_prompt})
+        while (self.num_tokens > MAX_TOKEN - MAX_MODULE_TOKE):
+            print('The conversation is getting larger than the available token numbers. I am deleting parts of the conversation.')
+            removed_message = self.message.pop(1)
+            added_tokens = self.count_tokens(removed_message)
+            self.num_tokens -= added_tokens   
 
     def generate_wrapper(self):
         """Prompt that tells GPT to generate modules"""
