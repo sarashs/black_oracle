@@ -22,7 +22,8 @@ class AIInterface:
 
     def receive_response(self):
         # Retrieves the generated response from the OpenAI API
-        return test_interface.response.choices[0].message["content"]
+        self.prompts.add_AI_response(self.response.choices[0].message["content"])
+        return self.response.choices[0].message["content"]
     
     def set_model(self, model):
         try:
@@ -33,9 +34,9 @@ class AIInterface:
             model = model_alt
         return model
 
-if __name__=="__main__":
+if __name__ == "__main__":
     test_interface = AIInterface()
-    test_interface.prompts.generate_initial_prompt("This is a test message")
+    test_interface.prompts.generate_initial_prompt("Desing a risc-jj cpu in system verilog")
     test_interface.send_prompt()
     response = test_interface.receive_response()
     try:
