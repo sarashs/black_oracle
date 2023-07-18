@@ -1,7 +1,6 @@
 from modules.ai_interface import AIInterface
 from modules.user_interface import UserInterface
 from modules.design_generator import DesignGenerator
-from modules.module_designer import ModuleDesigner
 from modules.integration_designer import IntegrationDesigner
 from modules.validator import Validator
 
