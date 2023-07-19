@@ -17,7 +17,7 @@ Before running the project, you'll need to have an OpenAI API key (purchage/get 
 
 2. Navigate to the project directory:
     ```
-    cd gpt-hardware-generator
+    cd black_oracle
     ```
 
 3. Install the necessary requirements using pip:
@@ -34,7 +34,7 @@ python main.py
 
 During the execution, the program asks for two sets of user input:
 - An initial prompt for the hardware design, e.g., "design a full adder in Verilog"
-- Responses to clarification questions asked by the AI model
+- Responses to clarification questions asked by the AI model. This input is fed in via a text file as it may be too large.
 
 The AI will generate the hardware design based on these inputs.
 
