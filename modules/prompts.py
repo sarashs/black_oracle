@@ -3,7 +3,8 @@ import tiktoken
 # Maximum number of available tokens
 MAX_TOKEN = 16000
 MAX_MESSAGE_TOKEN = 8000
-MAX_MODULE_TOKE = 3000
+MAX_MODULE_TOKEN = 3000
+MAX_TESTBENCH_TOKEN = 2000
 
 class Prompts:
     def __init__(self, model):
@@ -161,11 +162,28 @@ class Prompts:
         added_tokens = self.count_tokens(generate_module_prompt)
         self.num_tokens += added_tokens
         self.message.append({"role": "user", "content": generate_module_prompt})
-        while (self.num_tokens > MAX_TOKEN - MAX_MODULE_TOKE):
-            print('The conversation is getting larger than the available token numbers. I am deleting parts of the conversation.')
+        while (self.num_tokens > MAX_TOKEN - MAX_MODULE_TOKEN):
+            print('The conversation is getting larger than the available token numbers. I am deleting earlier parts of the memory.')
+            removed_message = self.message.pop(1)
             removed_message = self.message.pop(1)
             added_tokens = self.count_tokens(removed_message)
             self.num_tokens -= added_tokens   
+
+    def generate_testbench_module(self, module, module_content):
+        """Prompt that tells GPT to generate modules"""
+        _ = self.message.pop(-1)
+        _ = self.message.pop(-1)
+        moduletb = module.replace(self.language[1], f'_tb{self.language[1]}')
+        generate_module_prompt = f'Generate a test bench for the {module} give to you after "module code". The top module in your test bench must be called {moduletb} Make sure that you consider all of the possible corner cases. Do not include anything other than the test bench code in your response. Do not include tags, or quotations around the code you write. Only output the code as I will be writing it in a file.\n module code:\n {module_content}'
+        added_tokens = self.count_tokens(generate_module_prompt)
+        self.num_tokens += added_tokens
+        self.message.append({"role": "user", "content": generate_module_prompt})
+        while (self.num_tokens > MAX_TOKEN - MAX_TESTBENCH_TOKEN):
+            print('The conversation is getting larger than the available token numbers. I am deleting the last prompt and response from the memory.')
+            removed_message = self.message.pop(-1)
+            removed_message = self.message.pop(-1)
+            added_tokens = self.count_tokens(removed_message)
+            self.num_tokens -= added_tokens
 
     def generate_wrapper(self):
         """Prompt that tells GPT to generate modules"""
