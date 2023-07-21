@@ -47,6 +47,15 @@ class DesignGenerator:
             os.makedirs(os.path.join(os.getcwd(), directory), exist_ok=True)
             with open(full_path, 'w') as file:
                 file.write(response)
+        # Generate test bench
+            self.ai_interface.prompts.generate_testbench_module(module, response)
+            self.ai_interface.send_prompt()
+            response = self.ai_interface.receive_response()
+            directory = 'solution'
+            full_path = os.path.join(os.getcwd(), directory, module.replace(self.language[1], f'_tb{self.language[1]}'))
+            os.makedirs(os.path.join(os.getcwd(), directory), exist_ok=True)
+            with open(full_path, 'w') as file:
+                file.write(response)
 
 if __name__ == "__main__":
     ai = AIInterface()
