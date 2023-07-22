@@ -10,8 +10,19 @@ class DesignGenerator:
         self.language = None
         self.module_name_dict = {}
 
-    def get_design_features(self):
-        prompt, self.language = self.u_interface.get_initial_prompt()
+    def get_design_features(self, read_file=False, file_path=None):
+        if read_file:
+            print("Reading the prompt file...")
+            if file_path:
+                try:
+                    with open(file_path) as file:
+                        prompt = file.read()
+                except:
+                    raise FileNotFoundError(f"No file was found in the provided path: {file_path}")
+            else:
+                raise RuntimeError("A file path must be provided.")
+        else:
+            prompt, self.language = self.u_interface.get_initial_prompt()
         _ = self.ai_interface.prompts.generate_initial_prompt(prompt)
         self.ai_interface.send_prompt()
         response = self.ai_interface.receive_response()
