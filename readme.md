@@ -2,6 +2,10 @@
 
 This tool leverages the capabilities of OpenAI's GPT model to automate hardware design based on user prompts. It's an easy-to-use tool that requires minimal inputs from the user.
 
+The tool works by directing the AI to through a top-down design based on the prompt and a set of clarifications (as required by the AI). The following image describes the procedure:
+
+![Alt Text](https://github.com/sarashs/black_oracle/blob/development/Images/Block_diagram.png)
+
 ## Prerequisites
 
 Ensure you have Python 3.x installed and the pip package manager.
