@@ -6,16 +6,7 @@ class UserInterface:
         # Gets an initial prompt from the user
         print("Please enter your initial design prompt. Make sure to include your desired hardware description language (verilog, system verilog, vhdl):")
         prompt = input()
-        language = None
-        if ("verilog" in prompt): 
-            language = ("veilog", ".v")
-        elif ("vhdl" in prompt):
-            language = ("vhdl", ".vhdl")
-        elif ("system verilog" in prompt):
-            language = ("system verilog", ".sv")
-        else:
-            prompt, language = self.get_initial_prompt()
-        return prompt, language
+        return prompt
     
     def get_respone_to_questions(self):
         """This function obtains the users response to AI's questions via a file"""
