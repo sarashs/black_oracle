@@ -125,6 +125,7 @@ class Prompts:
             text = f"As a hardware engineer, you are given the following Instructions to design a hardware. There are two ways you are allowed to respond to this prompt.\
                     If everything is clear and you know exactly how to write the HDL code, then respond by: <<<Desing OK>>>.\
                     If you need more information before you can write the HDL code, then respond by: <<<Design NOT OK>>>. \
+                    This design is independent from what you have designed previously. Do not let the previous design interfere with this.\
                     Remember, you are only allowed to respond in these two ways. Do not inlcude anything other than the what is instructed in your response. \
                     Instructions: \n\n {message}"
             self.message.append({"role": "user", "content": text})
