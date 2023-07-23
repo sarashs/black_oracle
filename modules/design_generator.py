@@ -22,7 +22,15 @@ class DesignGenerator:
             else:
                 raise RuntimeError("A file path must be provided.")
         else:
-            prompt, self.language = self.u_interface.get_initial_prompt()
+            prompt = self.u_interface.get_initial_prompt()
+        if ("verilog" in prompt): 
+            self.language = ("veilog", ".v")
+        elif ("vhdl" in prompt):
+            self.language = ("vhdl", ".vhdl")
+        elif ("system verilog" in prompt):
+            self.language = ("system verilog", ".sv")
+        else:
+            raise NameError("No language name was found in the prompt.")
         _ = self.ai_interface.prompts.generate_initial_prompt(prompt)
         self.ai_interface.send_prompt()
         response = self.ai_interface.receive_response()
