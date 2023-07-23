@@ -116,8 +116,9 @@ class Prompts:
         self.num_tokens = sum([self.count_tokens(item["content"]) for item in self.pre_prompts])
         self.message = self.pre_prompts
 
-    def generate_initial_prompt(self, message: str) -> str:
+    def generate_initial_prompt(self, message: str, language: tuple) -> str:
         """This prompt is the first description of the system we want to build."""
+        self.language = language
         added_tokens = self.count_tokens(message)
         self.num_tokens += added_tokens
         print(f'Total number of tokens at intial prompt: {self.num_tokens}')
@@ -125,6 +126,7 @@ class Prompts:
             text = f"As a hardware engineer, you are given the following Instructions to design a hardware. There are two ways you are allowed to respond to this prompt.\
                     If everything is clear and you know exactly how to write the HDL code, then respond by: <<<Desing OK>>>.\
                     If you need more information before you can write the HDL code, then respond by: <<<Design NOT OK>>>. \
+                    This design is independent from what you have designed previously. Do not let the previous design interfere with this. Make sure that you design in {self.language[0]} language.\
                     Remember, you are only allowed to respond in these two ways. Do not inlcude anything other than the what is instructed in your response. \
                     Instructions: \n\n {message}"
             self.message.append({"role": "user", "content": text})
@@ -133,9 +135,10 @@ class Prompts:
             print("The initial instruction is too large")
             return "failed"
 
-    def generate_module_names(self, language):
+    def generate_module_names(self):
         """Thie prompt generates a set of module names and descriptions"""
-        self.module_name_prompt['content'].replace(".v", language[1])
+        self.module_name_prompt['content'] = self.module_name_prompt['content'].replace(".v", self.language[1])
+        print(self.language[1])
         added_tokens = self.count_tokens(self.module_name_prompt['content'])
         self.num_tokens += added_tokens
         print(f'Total number of tokens at generating module names: {self.num_tokens}')
@@ -158,7 +161,7 @@ class Prompts:
 
     def generate_module(self, module):
         """Prompt that tells GPT to generate modules"""
-        generate_module_prompt = f'Generate the {module} module based on your design. Make sure that your code is synthesizable. Make sure that the inputs and outputs are consistent with the overal design. Write the code in {self.language[0]}. Do not include anything other than the code in your response. Do not include tags, or quotations around the code you write. Only output the code as I will be writing it in a file.'
+        generate_module_prompt = f'Generate the {module} module based on your design. Write the code in {self.language[0]}. Ensure the code is synthesizable and the inputs and outputs are consistent with the overall design. Generate only raw, plain text code - no additional characters, tags, Markdown syntax, backticks, language specification, or explanatory notes should be included. We want just the pure code without any decorations or extras.'
         added_tokens = self.count_tokens(generate_module_prompt)
         self.num_tokens += added_tokens
         self.message.append({"role": "user", "content": generate_module_prompt})
@@ -206,4 +209,4 @@ class Prompts:
 
 if __name__ == "__main__":
     p = Prompts('gpt-4')
-    p.generate_initial_prompt('')
+    p.generate_initial_prompt('generate full adder in vhdl', ('vhld', '.vhdl'))

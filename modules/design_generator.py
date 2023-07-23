@@ -1,5 +1,11 @@
-from modules.ai_interface import AIInterface
-from modules.user_interface import UserInterface
+try:
+    from modules.ai_interface import AIInterface
+    from modules.user_interface import UserInterface
+    from modules.utils import remove_unwanted_lines
+except ModuleNotFoundError:
+    from ai_interface import AIInterface
+    from user_interface import UserInterface
+    from utils import remove_unwanted_lines
 import json
 import os
 
@@ -23,21 +29,22 @@ class DesignGenerator:
                 raise RuntimeError("A file path must be provided.")
         else:
             prompt = self.u_interface.get_initial_prompt()
-        if ("verilog" in prompt): 
-            self.language = ("veilog", ".v")
-        elif ("vhdl" in prompt):
-            self.language = ("vhdl", ".vhdl")
-        elif ("system verilog" in prompt):
+        if ("system verilog" in prompt.lower() or "systemverilog" in prompt.lower()): 
             self.language = ("system verilog", ".sv")
+        elif ("vhdl" in prompt.lower()):
+            self.language = ("vhdl", ".vhdl")
+        elif ("verilog" in prompt.lower()):
+            self.language = ("verilog", ".v")
         else:
             raise NameError("No language name was found in the prompt.")
-        _ = self.ai_interface.prompts.generate_initial_prompt(prompt)
+        print(f"The solution will be generated in {self.language[0]}")
+        _ = self.ai_interface.prompts.generate_initial_prompt(prompt, self.language)
         self.ai_interface.send_prompt()
         response = self.ai_interface.receive_response()
         human_response = None
         # Assess the response
         if "design ok" in response.lower():
-            self.ai_interface.prompts.generate_module_names(self.language)
+            self.ai_interface.prompts.generate_module_names()
         else:
             self.ai_interface.prompts.generate_followup()
             self.ai_interface.send_prompt()
@@ -47,7 +54,7 @@ class DesignGenerator:
 # TODO: I could probably improve how I handle this
             self.ai_interface.prompts.generate_response_to_followup(human_response)
             self.ai_interface.send_prompt()
-            self.ai_interface.prompts.generate_module_names(self.language)
+            self.ai_interface.prompts.generate_module_names()
         self.ai_interface.send_prompt()
         response = self.ai_interface.receive_response()
         try:
@@ -65,7 +72,7 @@ class DesignGenerator:
             full_path = os.path.join(os.getcwd(), directory, module)
             os.makedirs(os.path.join(os.getcwd(), directory), exist_ok=True)
             with open(full_path, 'w') as file:
-                file.write(response)
+                file.write(remove_unwanted_lines(response))
         # Generate test bench
             self.ai_interface.prompts.generate_testbench_module(module, response)
             self.ai_interface.send_prompt()
@@ -74,7 +81,7 @@ class DesignGenerator:
             full_path = os.path.join(os.getcwd(), directory, module.replace(self.language[1], f'_tb{self.language[1]}'))
             os.makedirs(os.path.join(os.getcwd(), directory), exist_ok=True)
             with open(full_path, 'w') as file:
-                file.write(response)
+                file.write(remove_unwanted_lines(response))
 
 if __name__ == "__main__":
     ai = AIInterface()

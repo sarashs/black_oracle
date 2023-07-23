@@ -1,6 +1,9 @@
 import openai
 import os
-from modules.prompts import Prompts
+try:
+    from modules.prompts import Prompts
+except ModuleNotFoundError:
+    from prompts import Prompts
 
 class AIInterface:
     def __init__(self, model='gpt-4'):
@@ -37,7 +40,7 @@ class AIInterface:
 
 if __name__ == "__main__":
     test_interface = AIInterface()
-    test_interface.prompts.generate_initial_prompt("Desing a risc-jj cpu in system verilog")
+    test_interface.prompts.generate_initial_prompt("Desing a risc-jj cpu in system verilog", ('verilog', '.v'))
     test_interface.send_prompt()
     response = test_interface.receive_response()
     try:
