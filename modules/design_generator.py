@@ -35,6 +35,8 @@ class DesignGenerator:
             self.language = ("vhdl", ".vhdl")
         elif ("verilog" in prompt.lower()):
             self.language = ("verilog", ".v")
+        elif ("hls" in prompt.lower()):
+            self.language = ("HLS (cpp)", ".cpp")
         else:
             raise NameError("No language name was found in the prompt.")
         print(f"The solution will be generated in {self.language[0]}")
@@ -65,7 +67,7 @@ class DesignGenerator:
 
     def generate_architecture(self) -> list:
         for module in self.module_name_dict.keys():
-            self.ai_interface.prompts.generate_module(module)
+            self.ai_interface.prompts.generate_module(module, self.module_name_dict[module])
             self.ai_interface.send_prompt()
             response = self.ai_interface.receive_response()
             directory = 'solution'

@@ -1,4 +1,5 @@
 # Black Oracle: GPT Hardware Generator
+![Visitors](https://visitor-badge.laobi.icu/badge?page_id=sarashs.BLACK_ORACLE)
 
 This tool leverages the capabilities of OpenAI's GPT model to automate hardware design based on user prompts. It's an easy-to-use tool that requires minimal inputs from the user.
 
@@ -37,7 +38,7 @@ python main.py
 ```
 
 During the execution, the program asks for two sets of user input:
-- An initial prompt for the hardware design, e.g., "design a full adder in Verilog"
+- An initial prompt for the hardware design, e.g., "design a full adder in Verilog." Note that currently it supports VHDL, Verilog, System Verilog and HLS (AMD-Xilins C++). **Your prompt should explicitely include one of the languages.**
 - Responses to clarification questions asked by the AI model. This input is fed in via a text file as it may be too large.
 
 The AI will generate the hardware design based on these inputs.
