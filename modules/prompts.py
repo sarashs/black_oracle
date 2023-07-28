@@ -8,13 +8,13 @@ MAX_TESTBENCH_TOKEN = 2000
 
 class Prompts:
     def __init__(self, model):
-        self.module_name_prompt = {"role": "user", "content": "Create a JSON dictionary that represents the modules for a synthesizable hardware design project. Each module should be represented as a key-value pair in the dictionary. The key should be the module name followed by its extension (.v). The value should be another dictionary. This inner dictionary should have two keys: \"connected_to\" and \"description\". The value for \"connected_to\" should be a list of names of modules that are connected to the current module. The value for \"description\" should be a brief sentence explaining the module's function. Do not add any additional text, just output the final JSON dictionary."}
+        self.module_name_prompt = {"role": "user", "content": "Create a JSON dictionary that represents the modules for a synthesizable hardware design project. Each module should be represented as a key-value pair in the dictionary. The key should be the module name followed by its extension (.v). The value should be another dictionary. This inner dictionary should have two keys: \"connected_to\" and \"description\". The value for \"connected_to\" should be a list of names of modules that are connected to the current module. The value for \"description\" should be a brief sentence explaining the module's function and step by step reasoning on the modules design. Do not add any additional text, just output the final JSON dictionary."}
         self.user_prompt_not_ok = {"role": "user", "content": "ask a set of at most 20 questions that will enable you to complete the design"}
         self.user_response_to_questions = {"role": "user", "content": ''}
-        self.pre_prompts = [{"role" : "system", "content": "You are a seasoned AI FPGA engineer. Your goal is to write working logic code in VHDL, Verilog and System verilog as well as test benches on your own."},
+        self.pre_prompts = [{"role" : "system", "content": "You are a seasoned AI FPGA engineer. Your goal is to write working logic code in VHDL, Verilog, System verilog, Xilinx HLS cpp as well as test benches on your own."},
                             {"role" : "user", "content": "As a hardware engineer, you are given the following Instructions to design a hardware. There are two ways you are allowed to respond to this prompt.\
-                    If everything is clear and you know exactly how to write the HDL code, then respond by: <<<Desing OK>>>.\
-                    If you need more information before you can write the HDL code, then respond by: <<<Design NOT OK>>>. \
+                    If everything is clear and you know exactly how to write the HDL or HLS cpp code, then respond by: <<<Desing OK>>>.\
+                    If you need more information before you can write the HDL or HLS cpp code, then respond by: <<<Design NOT OK>>>. \
                     Remember, you are only allowed to respond in these two ways. Do not inlcude anything other than the what is instructed in your response. \
                     Instructions: \n\n Design a simple cpu in verilog"},
                             {"role" : "assistant", "content": "<<<Design NOT OK>>>"},
@@ -124,8 +124,8 @@ class Prompts:
         print(f'Total number of tokens at intial prompt: {self.num_tokens}')
         if (self.num_tokens) < MAX_MESSAGE_TOKEN:
             text = f"As a hardware engineer, you are given the following Instructions to design a hardware. There are two ways you are allowed to respond to this prompt.\
-                    If everything is clear and you know exactly how to write the HDL code, then respond by: <<<Desing OK>>>.\
-                    If you need more information before you can write the HDL code, then respond by: <<<Design NOT OK>>>. \
+                    If everything is clear and you know exactly how to write the HDL or HLS cpp code, then respond by: <<<Desing OK>>>.\
+                    If you need more information before you can write the HDL or HLS cpp code, then respond by: <<<Design NOT OK>>>. \
                     This design is independent from what you have designed previously. Do not let the previous design interfere with this. Make sure that you design in {self.language[0]} language.\
                     Remember, you are only allowed to respond in these two ways. Do not inlcude anything other than the what is instructed in your response. \
                     Instructions: \n\n {message}"
@@ -138,7 +138,6 @@ class Prompts:
     def generate_module_names(self):
         """Thie prompt generates a set of module names and descriptions"""
         self.module_name_prompt['content'] = self.module_name_prompt['content'].replace(".v", self.language[1])
-        print(self.language[1])
         added_tokens = self.count_tokens(self.module_name_prompt['content'])
         self.num_tokens += added_tokens
         print(f'Total number of tokens at generating module names: {self.num_tokens}')
@@ -159,9 +158,9 @@ class Prompts:
         print(f'Total number of tokens at answering the followup questions: {self.num_tokens}')
         self.message.append(self.user_response_to_questions)
 
-    def generate_module(self, module):
+    def generate_module(self, module, description):
         """Prompt that tells GPT to generate modules"""
-        generate_module_prompt = f'Generate the {module} module based on your design. Write the code in {self.language[0]}. Ensure the code is synthesizable and the inputs and outputs are consistent with the overall design. Generate only raw, plain text code - no additional characters, tags, Markdown syntax, backticks, language specification, or explanatory notes should be included. We want just the pure code without any decorations or extras.'
+        generate_module_prompt = f'Generate the {module} module based on your design. Write the code in {self.language[0]}. Ensure that your design matches the following descriptions provided by you:\n {description} \n\nEnsure the code is synthesizable and the inputs and outputs are consistent with the overall design. Generate only raw, plain text code - no additional characters, tags, Markdown syntax, backticks, language specification, or explanatory notes should be included. We want just the pure code without any decorations or extras.'
         added_tokens = self.count_tokens(generate_module_prompt)
         self.num_tokens += added_tokens
         self.message.append({"role": "user", "content": generate_module_prompt})
