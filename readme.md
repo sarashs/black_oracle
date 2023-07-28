@@ -1,5 +1,5 @@
 # Black Oracle: GPT Hardware Generator
-![Visitors](https://visitor-badge.laobi.icu/badge?page_id=sarashs.black_oracle)
+![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Fsarashs%2Fblack_oracle&label=VISITORS&countColor=%23263759)
 
 This tool leverages the capabilities of OpenAI's GPT model to automate hardware design based on user prompts. It's an easy-to-use tool that requires minimal inputs from the user.
 
