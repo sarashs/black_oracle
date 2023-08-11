@@ -16,7 +16,7 @@ class DesignGenerator:
         self.language = None
         self.module_name_dict = {}
 
-    def get_design_features(self, read_file=False, file_path=None):
+    def get_design_features(self, no_follow_up=False, read_file=False, file_path=None):
         if read_file:
             print("Reading the prompt file...")
             if file_path:
@@ -45,7 +45,7 @@ class DesignGenerator:
         response = self.ai_interface.receive_response()
         human_response = None
         # Assess the response
-        if "design ok" in response.lower():
+        if ("design ok" in response.lower()) or no_follow_up:
             self.ai_interface.prompts.generate_module_names()
         else:
             self.ai_interface.prompts.generate_followup()

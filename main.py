@@ -103,16 +103,17 @@ class GenericWindow(tk.Tk):
             self.prompt_text.delete(1.0, tk.END)  # Clear existing content
             self.prompt_text.insert(tk.END, file_content)
 
-def main(read_file, file_path):
+def main(read_file, file_path, no_follow_up):
     # Your main terminal-based function remains the same
     ai = AIInterface()
     ui = UserInterface()
     dg = DesignGenerator(ai, ui)
-    dg.get_design_features(read_file, file_path)
+    dg.get_design_features(no_follow_up, read_file, file_path)
     dg.generate_architecture()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Basic set up for the black oracle")
+    parser.add_argument("-n", "--no_follow_up", default=False, action="store_true", help="Do not ask followup questions and just design based on the prompt.")
     parser.add_argument("-r", "--read_file", default=False, action="store_true", help="Whether to read the first prompt from a file or not.")
     parser.add_argument("-f", "--file_path", nargs="?", default=None, help="Path to the file to be processed (optional, required if '--read_file' is specified).")
     parser.add_argument("--gui", action="store_true", help="Launch the GUI interface.")
@@ -125,4 +126,4 @@ if __name__ == "__main__":
     else:
         if args.read_file and not args.file_path:
             raise RuntimeError("A file path must be provided when using '--read_file' option.")
-        main(args.read_file, args.file_path)
+        main(args.read_file, args.file_path, args.no_follow_up)

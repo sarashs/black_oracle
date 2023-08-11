@@ -4,7 +4,7 @@ class UserInterface:
 
     def get_initial_prompt(self):
         # Gets an initial prompt from the user
-        print("Please enter your initial design prompt. Make sure to include your desired hardware description language (verilog, system verilog, vhdl):")
+        print("Please enter your initial design prompt. Make sure to include your desired hardware description language (verilog, system verilog, vhdl, HLS):")
         prompt = input()
         return prompt
     
