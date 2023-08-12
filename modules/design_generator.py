@@ -1,11 +1,11 @@
 try:
     from modules.ai_interface import AIInterface
     from modules.user_interface import UserInterface
-    from modules.utils import remove_unwanted_lines
+    from modules.utils import remove_unwanted_lines, save_to_file
 except ModuleNotFoundError:
     from ai_interface import AIInterface
     from user_interface import UserInterface
-    from utils import remove_unwanted_lines
+    from utils import remove_unwanted_lines, save_to_file
 import json
 import os
 
@@ -51,7 +51,11 @@ class DesignGenerator:
             self.ai_interface.prompts.generate_followup()
             self.ai_interface.send_prompt()
             response = self.ai_interface.receive_response()
+            save_to_file("follow_up_questions.doc", remove_unwanted_lines(response))
+
+# TODO: Replace these prints with logs
             print(response)
+
             human_response = self.u_interface.get_respone_to_questions()
 # TODO: I could probably improve how I handle this
             self.ai_interface.prompts.generate_response_to_followup(human_response)
@@ -70,20 +74,12 @@ class DesignGenerator:
             self.ai_interface.prompts.generate_module(module, self.module_name_dict[module])
             self.ai_interface.send_prompt()
             response = self.ai_interface.receive_response()
-            directory = 'solution'
-            full_path = os.path.join(os.getcwd(), directory, module)
-            os.makedirs(os.path.join(os.getcwd(), directory), exist_ok=True)
-            with open(full_path, 'w') as file:
-                file.write(remove_unwanted_lines(response))
+            save_to_file("follow_up_questions.doc", remove_unwanted_lines(response))
         # Generate test bench
             self.ai_interface.prompts.generate_testbench_module(module, response)
             self.ai_interface.send_prompt()
             response = self.ai_interface.receive_response()
-            directory = 'solution'
-            full_path = os.path.join(os.getcwd(), directory, module.replace(self.language[1], f'_tb{self.language[1]}'))
-            os.makedirs(os.path.join(os.getcwd(), directory), exist_ok=True)
-            with open(full_path, 'w') as file:
-                file.write(remove_unwanted_lines(response))
+            save_to_file("follow_up_questions.doc", remove_unwanted_lines(response))
 
 if __name__ == "__main__":
     ai = AIInterface()
