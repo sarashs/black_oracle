@@ -1,1 +1,5 @@
-Modify the prompts such that it doesn't ask any questions about verification and testing
+- ~~Modify the prompts such that it doesn't ask any questions about verification and testing~~
+- ~~add hls/C/C++ handling~~
+- ~~implement a basic gui~~
+- implement various chain pipelines for different applications aka educational, research, processor, accelerator etc
+- investigate if we can run the test benches automatically and show whether they passed/failed

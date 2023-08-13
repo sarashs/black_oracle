@@ -36,6 +36,11 @@ Run the following command to start the application:
 ```
 python main.py
 ```
+Note that there are various execution options inluding a gui option:
+
+```
+python main.py --gui
+```
 
 During the execution, the program asks for two sets of user input:
 - An initial prompt for the hardware design, e.g., "design a full adder in Verilog." Note that currently it supports VHDL, Verilog, System Verilog and HLS (AMD-Xilins C++). **Your prompt should explicitely include one of the languages.**
