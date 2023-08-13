@@ -1,11 +1,11 @@
 try:
     from modules.ai_interface import AIInterface
     from modules.user_interface import UserInterface
-    from modules.utils import remove_unwanted_lines
+    from modules.utils import remove_unwanted_lines, save_to_file
 except ModuleNotFoundError:
     from ai_interface import AIInterface
     from user_interface import UserInterface
-    from utils import remove_unwanted_lines
+    from utils import remove_unwanted_lines, save_to_file
 import json
 import os
 
@@ -16,7 +16,7 @@ class DesignGenerator:
         self.language = None
         self.module_name_dict = {}
 
-    def get_design_features(self, read_file=False, file_path=None):
+    def get_design_features(self, no_follow_up=False, read_file=False, file_path=None):
         if read_file:
             print("Reading the prompt file...")
             if file_path:
@@ -45,13 +45,17 @@ class DesignGenerator:
         response = self.ai_interface.receive_response()
         human_response = None
         # Assess the response
-        if "design ok" in response.lower():
+        if ("design ok" in response.lower()) or no_follow_up:
             self.ai_interface.prompts.generate_module_names()
         else:
             self.ai_interface.prompts.generate_followup()
             self.ai_interface.send_prompt()
             response = self.ai_interface.receive_response()
+            save_to_file("follow_up_questions.doc", remove_unwanted_lines(response))
+
+# TODO: Replace these prints with logs
             print(response)
+
             human_response = self.u_interface.get_respone_to_questions()
 # TODO: I could probably improve how I handle this
             self.ai_interface.prompts.generate_response_to_followup(human_response)
@@ -63,27 +67,21 @@ class DesignGenerator:
             self.module_name_dict = json.loads(response)
         except json.JSONDecodeError:
             print("AI response is not as expected (JSON dict). Please try another prompt.")
-        print(f'Your design will be implemented as follows: \n\n {response}')
+        self.u_interface.show_design(response)
+        save_to_file("high_level_design.json", remove_unwanted_lines(response))
 
-    def generate_architecture(self) -> list:
+    def generate_architecture(self):
         for module in self.module_name_dict.keys():
             self.ai_interface.prompts.generate_module(module, self.module_name_dict[module])
             self.ai_interface.send_prompt()
             response = self.ai_interface.receive_response()
-            directory = 'solution'
-            full_path = os.path.join(os.getcwd(), directory, module)
-            os.makedirs(os.path.join(os.getcwd(), directory), exist_ok=True)
-            with open(full_path, 'w') as file:
-                file.write(remove_unwanted_lines(response))
+            save_to_file(module, remove_unwanted_lines(response))
         # Generate test bench
             self.ai_interface.prompts.generate_testbench_module(module, response)
             self.ai_interface.send_prompt()
             response = self.ai_interface.receive_response()
-            directory = 'solution'
-            full_path = os.path.join(os.getcwd(), directory, module.replace(self.language[1], f'_tb{self.language[1]}'))
-            os.makedirs(os.path.join(os.getcwd(), directory), exist_ok=True)
-            with open(full_path, 'w') as file:
-                file.write(remove_unwanted_lines(response))
+            save_to_file(module.replace(self.language[1], "_tb" + self.language[1]), remove_unwanted_lines(response))
+        self.u_interface.get_feedback()
 
 if __name__ == "__main__":
     ai = AIInterface()

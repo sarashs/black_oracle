@@ -43,6 +43,12 @@ During the execution, the program asks for two sets of user input:
 
 The AI will generate the hardware design based on these inputs.
 
+## License
+
+This software is licensed under the GNU General Public License (GPL), version 3 (GPL-3.0). For the full text of the license, see the [LICENSE](LICENSE) file in this repository.
+
+For more information on GPL-3.0, visit: https://www.gnu.org/licenses/gpl-3.0.en.html
+
 ## Status
 
 Please note that this project is currently in its initial stages and under active development. Feedback and contributions are always welcome!
