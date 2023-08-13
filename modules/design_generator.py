@@ -67,19 +67,21 @@ class DesignGenerator:
             self.module_name_dict = json.loads(response)
         except json.JSONDecodeError:
             print("AI response is not as expected (JSON dict). Please try another prompt.")
-        print(f'Your design will be implemented as follows: \n\n {response}')
+        self.u_interface.show_design(response)
+        save_to_file("high_level_design.json", remove_unwanted_lines(response))
 
-    def generate_architecture(self) -> list:
+    def generate_architecture(self):
         for module in self.module_name_dict.keys():
             self.ai_interface.prompts.generate_module(module, self.module_name_dict[module])
             self.ai_interface.send_prompt()
             response = self.ai_interface.receive_response()
-            save_to_file("follow_up_questions.doc", remove_unwanted_lines(response))
+            save_to_file(module, remove_unwanted_lines(response))
         # Generate test bench
             self.ai_interface.prompts.generate_testbench_module(module, response)
             self.ai_interface.send_prompt()
             response = self.ai_interface.receive_response()
-            save_to_file("follow_up_questions.doc", remove_unwanted_lines(response))
+            save_to_file(module.replace(self.language[1], "_tb" + self.language[1]), remove_unwanted_lines(response))
+        self.u_interface.get_feedback()
 
 if __name__ == "__main__":
     ai = AIInterface()

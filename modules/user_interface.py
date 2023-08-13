@@ -28,6 +28,7 @@ class UserInterface:
             # If GUI mode is active, launch the secondary window
             app = GenericWindow("secondary")
             app.mainloop()
+            content, _ = app.get_user_input()
         else:
             print("Please input the relative path to your responses to the AI questions. Note that your responses should be an itemized list of replies to the AI questions with no extra text.")
             response_path = input()
@@ -38,14 +39,20 @@ class UserInterface:
 
     def show_design(self, design):
         # Shows a design to the user
-        print("Here's the proposed design:")
-        print(design)
+        if self.gui:
+            # If GUI mode is active, launch the secondary window
+            app = GenericWindow("tertiary", design)
+            app.mainloop()
+        else:
+            print("Here's the proposed design:\n\n")
+            print(design)
 
     def get_feedback(self):
-        # Gets feedback from the user
-        print("Do you accept this design? (yes/no)")
-        feedback = input()
-        return feedback.lower() == 'yes'
+        if self.gui:
+            app = GenericWindow("final")
+            app.mainloop()
+        else:
+            print("Your design is ready.")
     
 
 class GenericWindow(tk.Tk):
@@ -54,6 +61,7 @@ class GenericWindow(tk.Tk):
         self.customFont = font.Font(family="Helvetica", size=14)
         self.user_prompt = ""
         self.user_options = ""
+        self.user_option = None
         self.options = ["Verilog", "System Verilog", "VHDL", "HLS C/C++"]
         self.file_path = tk.StringVar()
         if window_type == "main":
@@ -61,7 +69,9 @@ class GenericWindow(tk.Tk):
         elif window_type == "secondary":
             self.init_secondary_window(results)
         elif window_type == "tertiary":
-            self.init_tertiary_window()
+            self.init_tertiary_window(results)
+        elif window_type == "final":
+            self.init_final_window()
 
     def init_main_window(self):
         self.title("Black Oracle UI")
@@ -129,25 +139,34 @@ class GenericWindow(tk.Tk):
         tk.Button(self, text="Proceed", command=self.on_proceed).pack(pady=20)
 
     def on_proceed(self):
-        # Destroy current window and launch tertiary window
+        self.user_prompt = self.prompt_text.get("1.0", tk.END).strip()
         self.destroy()
-        app = GenericWindow("tertiary")
-        app.mainloop()
 
-    def init_tertiary_window(self):
-        self.title("Additional Inputs")
+    def init_tertiary_window(self, results):
+        self.title("Proposed Design")
+        self.iconbitmap('Images\logo.ico')
 
-        tk.Label(self, text="Enter more details:").pack(pady=5)
-        self.additional_input = tk.Text(self, width=50, height=10)
-        self.additional_input.pack(pady=5)
+        tk.Label(self, text="This design will be implemented:", font=self.customFont).pack(pady=5)
+        text_widself = tk.Text(self, width=150, height=30)
+        text_widself.pack(pady=5)
+        text_widself.delete(1.0, tk.END)
+        text_widself.insert(tk.END, results)
+        text_widself.config(state=tk.DISABLED)
 
-        tk.Button(self, text="Submit", command=self.on_submit_tertiary).pack(pady=20)
+        tk.Button(self, text="OK", command=self.on_ok_tertiary, font=self.customFont).pack(pady=20)
 
-    def on_submit_tertiary(self):
-        additional_info = self.additional_input.get("1.0", tk.END).strip()
-        # Do something with the additional_info
+    def on_ok_tertiary(self):
         self.destroy()
-    
+
+    def init_final_window(self):
+        self.title("Exit the program")
+        self.iconbitmap('Images\logo.ico')
+        tk.Label(self, text="Your design is ready.", font=self.customFont).pack(pady=5)
+        tk.Button(self, text="Exit", command=self.on_exit_tertiary, font=self.customFont).pack(pady=20)
+
+    def on_exit_tertiary(self):
+        self.destroy()
+
     def _choose_file(self):
         filepath = filedialog.askopenfilename()
         if filepath:
